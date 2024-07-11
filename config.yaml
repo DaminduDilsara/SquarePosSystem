@@ -1,0 +1,4 @@
+app_config:
+  app_port: 8080
+square_config:
+  access_token: "<secret>"
