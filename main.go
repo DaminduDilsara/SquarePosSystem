@@ -1,7 +1,7 @@
 package main
 
 import (
-	"SquarePOS/configurations"
+	"SquarePosSystem/configurations"
 	"fmt"
 )
 
