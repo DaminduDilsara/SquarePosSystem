@@ -1,4 +1,7 @@
 app_config:
   app_port: 8080
+  write_timeout: 20
+  read_time_out: 20
+  idle_timeout: 20
 square_config:
   access_token: "<secret>"
