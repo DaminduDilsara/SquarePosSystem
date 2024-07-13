@@ -4,8 +4,11 @@ import (
 	"SquarePosSystem/internal/domain/clients/square_client"
 	"SquarePosSystem/internal/domain/entities/schemas/request_schemas"
 	"SquarePosSystem/internal/domain/entities/schemas/response_schemas"
+	"log"
 	"strconv"
 )
+
+const orderServiceLogPrefix = "order_service_impl"
 
 // orderService implements the OrderService interface
 type orderService struct {
@@ -48,6 +51,7 @@ func (o orderService) CreateOrder(request request_schemas.CreateOrderIncomingReq
 	// Call the client function
 	internalResp, err := o.client.CreateOrder(internalReq, authHeader)
 	if err != nil {
+		log.Printf("%v - Error: %v", orderServiceLogPrefix, err)
 		return nil, err
 	}
 
@@ -69,6 +73,7 @@ func (o *orderService) SearchOrders(request request_schemas.SearchOrdersIncoming
 
 	internalResp, err := o.client.SearchOrders(internalReq, authHeader)
 	if err != nil {
+		log.Printf("%v - Error: %v", orderServiceLogPrefix, err)
 		return nil, err
 	}
 
@@ -87,6 +92,7 @@ func (o *orderService) FindOrders(request request_schemas.FindOrdersIncomingRequ
 
 	internalResp, err := o.client.FindOrders(internalReq, authHeader)
 	if err != nil {
+		log.Printf("%v - Error: %v", orderServiceLogPrefix, err)
 		return nil, err
 	}
 
