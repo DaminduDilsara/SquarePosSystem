@@ -2,6 +2,7 @@ package http
 
 import (
 	"SquarePosSystem/configurations"
+	v1 "SquarePosSystem/internal/transport/http/controllers/v1"
 	"SquarePosSystem/internal/transport/http/engines"
 	"fmt"
 	"log"
@@ -13,10 +14,11 @@ var engine http.Server
 
 func InitServer(
 	conf *configurations.Config,
+	controllerV1 *v1.ControllerV1,
 ) {
 	engine = http.Server{
 		Addr:         fmt.Sprintf(":%v", conf.AppConfig.AppPort),
-		Handler:      engines.NewEngine().GetEngine(),
+		Handler:      engines.NewEngine(controllerV1).GetEngine(),
 		WriteTimeout: time.Second * conf.AppConfig.WriteTimeout,
 		ReadTimeout:  time.Second * conf.AppConfig.ReadTimeOut,
 		IdleTimeout:  time.Second * conf.AppConfig.IdleTimeout,

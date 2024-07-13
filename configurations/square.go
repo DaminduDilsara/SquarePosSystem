@@ -1,5 +1,5 @@
 package configurations
 
 type SquareConfigurations struct {
-	AccessToken string `yaml:"access_token"`
+	BaseUrl string `yaml:"base_url"`
 }

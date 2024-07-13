@@ -1,15 +1,21 @@
 package engines
 
 import (
+	v1 "SquarePosSystem/internal/transport/http/controllers/v1"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type Engine struct {
+	controllerV1 *v1.ControllerV1
 }
 
-func NewEngine() *Engine {
-	return &Engine{}
+func NewEngine(
+	controllerV1 *v1.ControllerV1,
+) *Engine {
+	return &Engine{
+		controllerV1: controllerV1,
+	}
 }
 
 func (e *Engine) GetEngine() *gin.Engine {
@@ -21,9 +27,7 @@ func (e *Engine) GetEngine() *gin.Engine {
 			context.String(http.StatusOK, "pong")
 		})
 
-		v1Group.GET("/testPath", func(context *gin.Context) {
-			context.String(http.StatusOK, "test done")
-		})
+		v1Group.POST("/location/create", e.controllerV1.CreateLocationController)
 
 		// add endpoints
 	}
