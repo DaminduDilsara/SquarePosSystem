@@ -5,6 +5,7 @@ import (
 	"SquarePosSystem/internal/domain/clients/square_client"
 	"SquarePosSystem/internal/domain/services/location_service"
 	"SquarePosSystem/internal/domain/services/order_service"
+	"SquarePosSystem/internal/domain/services/payment_service"
 	"SquarePosSystem/internal/transport/http"
 	v1 "SquarePosSystem/internal/transport/http/controllers/v1"
 	"log"
@@ -19,10 +20,13 @@ func main() {
 
 	squareLocationClient := square_client.NewSquareLocationClient(conf)
 	squareOrderClient := square_client.NewSquareOrderClient(conf)
+	squarePaymentClient := square_client.NewSquarePaymentClient(conf)
 
 	locationService := location_service.NewLocationService(squareLocationClient)
 	orderService := order_service.NewOrderService(squareOrderClient)
-	controllerV1 := v1.NewControllerV1(locationService, orderService)
+	paymentService := payment_service.NewPaymentService(squarePaymentClient)
+
+	controllerV1 := v1.NewControllerV1(locationService, orderService, paymentService)
 
 	http.InitServer(conf, controllerV1)
 

@@ -1,8 +1,8 @@
 app_config:
   app_port: 8080
-  write_timeout: 20 # temporary value
-  read_time_out: 20 # temporary value
-  idle_timeout: 20 # temporary value
+  write_timeout: 15
+  read_time_out: 15
+  idle_timeout: 15
 square_config:
   base_url: "https://connect.squareup.com/v2"
   square_version: "2024-06-04"

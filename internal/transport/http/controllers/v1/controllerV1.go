@@ -4,6 +4,7 @@ import (
 	"SquarePosSystem/internal/domain/entities/schemas/request_schemas"
 	"SquarePosSystem/internal/domain/services/location_service"
 	"SquarePosSystem/internal/domain/services/order_service"
+	"SquarePosSystem/internal/domain/services/payment_service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -11,15 +12,18 @@ import (
 type ControllerV1 struct {
 	locationService location_service.LocationService
 	orderService    order_service.OrderService
+	paymentService  payment_service.PaymentService
 }
 
 func NewControllerV1(
 	locationSrc location_service.LocationService,
 	orderSrc order_service.OrderService,
+	paymentSrc payment_service.PaymentService,
 ) *ControllerV1 {
 	return &ControllerV1{
 		locationService: locationSrc,
 		orderService:    orderSrc,
+		paymentService:  paymentSrc,
 	}
 }
 
@@ -107,6 +111,28 @@ func (con ControllerV1) FindOrdersController(c *gin.Context) {
 	}
 
 	searchResp, err := con.orderService.FindOrders(searchReq, authHeader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, searchResp)
+}
+func (con ControllerV1) CreatePaymentController(c *gin.Context) {
+	var searchReq request_schemas.CreatePaymentRequest
+	if err := c.ShouldBindJSON(&searchReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract the Authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization header is required"})
+		return
+	}
+
+	searchResp, err := con.paymentService.CreatePayment(searchReq, authHeader)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

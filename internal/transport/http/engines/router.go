@@ -35,6 +35,8 @@ func (e *Engine) GetEngine() *gin.Engine {
 
 		v1Group.POST("/orders/find", e.controllerV1.FindOrdersController)
 
+		v1Group.POST("/payment/create", e.controllerV1.CreatePaymentController)
+
 		// add endpoints
 	}
 
