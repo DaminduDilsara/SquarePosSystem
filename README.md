@@ -14,11 +14,12 @@ This project uses Square POS APIs to provide the following endpoints:
 #### Sample cURL
 ```sh
 curl --location 'localhost:8080/v1.0/location/create' \
---header 'Authorization: Bearer <auth_token> ' \
+--header 'Authorization: Bearer <auth_token>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "business_email": "business1@gmail.com",
-  "description": "Business1"
+  "description": "Business1",
+  "business_name": "Business1"
 }'
 ```
 you can create locations using this endpoints and with the location ID, you can handle the orders separately
@@ -87,4 +88,21 @@ curl --location 'localhost:8080/v1.0/payment/create' \
     "bill_amount": 5000,
     "tip_amount": 10
 }'
+```
+
+## Unit tests
+
+> For running unit tests and see the coverage, run below commands in the terminal
+
+To run the tests and get coverage of individual files
+```sh
+go test -cover ./...
+```
+
+To run the tests and get coverage report
+```sh
+go test -coverprofile=c.out ./...
+```
+```sh
+go tool cover -html="c.out"
 ```
