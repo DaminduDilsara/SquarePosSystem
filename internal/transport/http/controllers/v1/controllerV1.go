@@ -68,3 +68,26 @@ func (con ControllerV1) CreateOrderController(c *gin.Context) {
 
 	c.JSON(http.StatusOK, outgoingResp)
 }
+
+func (con ControllerV1) SearchOrdersController(c *gin.Context) {
+	var searchReq request_schemas.SearchOrdersIncomingRequest
+	if err := c.ShouldBindJSON(&searchReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract the Authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization header is required"})
+		return
+	}
+
+	searchResp, err := con.orderService.SearchOrders(searchReq, authHeader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, searchResp)
+}

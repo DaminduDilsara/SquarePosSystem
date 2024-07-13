@@ -4,6 +4,7 @@ import (
 	"SquarePosSystem/internal/domain/clients/square_client"
 	"SquarePosSystem/internal/domain/entities/schemas/request_schemas"
 	"SquarePosSystem/internal/domain/entities/schemas/response_schemas"
+	"strconv"
 )
 
 // orderService implements the OrderService interface
@@ -50,57 +51,83 @@ func (o orderService) CreateOrder(request request_schemas.CreateOrderIncomingReq
 		return nil, err
 	}
 
-	response := o.ConvertToCreateOrderResponse(internalResp)
+	response := o._convertToCreateOrderResponse(internalResp)
 
 	return response, nil
 }
 
-func (o orderService) ConvertToCreateOrderResponse(squareResp *response_schemas.CreateOrderSquareResponse) *response_schemas.CreateOrderResponse {
-	order := squareResp.Order
-	createOrderResp := response_schemas.CreateOrderResponse{
-		OrderResponse: response_schemas.OrderResponse{
-			Id:       order.Id,
-			OpenedAt: order.CreatedAt,
-			IsClosed: order.State == "COMPLETED",
-			Table:    order.ReferenceId,
-			Items: []struct {
-				Name      string `json:"name"`
-				Comment   string `json:"comment"`
-				UnitPrice int    `json:"unit_price"`
-				Quantity  int    `json:"quantity"`
-				Discounts []struct {
-					Name         string `json:"name"`
-					IsPercentage bool   `json:"is_percentage"`
-					Value        int    `json:"value"`
-					Amount       int    `json:"amount"`
-				} `json:"discounts"`
-				Modifiers []struct {
-					Name      string `json:"name"`
-					UnitPrice int    `json:"unit_price"`
-					Quantity  int    `json:"quantity"`
-					Amount    int    `json:"amount"`
-				} `json:"modifiers"`
-				Amount int `json:"amount"`
-			}{},
-			Totals: struct {
-				Discounts     int `json:"discounts"`
-				Due           int `json:"due"`
-				Tax           int `json:"tax"`
-				ServiceCharge int `json:"service_charge"`
-				Paid          int `json:"paid"`
-				Tips          int `json:"tips"`
-				Total         int `json:"total"`
-			}{
-				Discounts:     order.TotalDiscountMoney.Amount,
-				Due:           order.NetAmountDueMoney.Amount,
-				Tax:           order.TotalTaxMoney.Amount,
-				ServiceCharge: order.TotalServiceChargeMoney.Amount,
-				Paid:          order.TotalMoney.Amount,
-				Tips:          order.TotalTipMoney.Amount,
-				Total:         order.TotalMoney.Amount,
-			},
-		},
+func (o *orderService) SearchOrders(request request_schemas.SearchOrdersIncomingRequest, authHeader string) (*response_schemas.SearchOrdersResponse, error) {
+
+	internalReq := request_schemas.SearchOrdersSquareRequest{
+		LocationIds:   []string{request.LocationId},
+		ReturnEntries: false,
 	}
 
-	return &createOrderResp
+	if request.TableNo != "" {
+		internalReq.Query.Filter.SourceFilter.SourceNames = []string{request.TableNo}
+	}
+
+	// Call the client function
+	internalResp, err := o.client.SearchOrders(internalReq, authHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	response := o.convertToSearchOrdersSquareResponse(internalResp)
+
+	return response, nil
+}
+
+func (o orderService) _convertToCreateOrderResponse(squareResp *response_schemas.CreateOrderSquareResponse) *response_schemas.CreateOrderResponse {
+	order := o._convertSquareOrderToOrderResponse(squareResp.Order)
+
+	resp := response_schemas.CreateOrderResponse{order}
+
+	return &resp
+}
+
+func (o orderService) _convertSquareOrderToOrderResponse(squareOrder response_schemas.SquareOrder) response_schemas.OrderResponse {
+	items := make([]response_schemas.Item, len(squareOrder.LineItems))
+	for i, lineItem := range squareOrder.LineItems {
+		items[i] = response_schemas.Item{
+			Name:      lineItem.Name,
+			Comment:   lineItem.Note,
+			UnitPrice: lineItem.BasePriceMoney.Amount,
+			Quantity:  o.stringToInt(lineItem.Quantity),
+			Discounts: []response_schemas.Discount{},
+			Modifiers: []response_schemas.Modifier{},
+			Amount:    lineItem.TotalMoney.Amount,
+		}
+	}
+	return response_schemas.OrderResponse{
+		Id:       squareOrder.Id,
+		OpenedAt: squareOrder.CreatedAt,
+		IsClosed: squareOrder.State == "COMPLETED",
+		Table:    squareOrder.Source.Name,
+		Items:    items,
+		Totals: response_schemas.Totals{
+			Discounts:     squareOrder.TotalDiscountMoney.Amount,
+			Due:           0,
+			Tax:           squareOrder.TotalTaxMoney.Amount,
+			ServiceCharge: squareOrder.TotalServiceChargeMoney.Amount,
+			Paid:          0,
+			Tips:          squareOrder.TotalTipMoney.Amount,
+			Total:         squareOrder.TotalMoney.Amount,
+		},
+	}
+}
+
+func (o orderService) stringToInt(s string) int {
+	val, _ := strconv.Atoi(s)
+	return val
+}
+
+func (o orderService) convertToSearchOrdersSquareResponse(squareResponse *response_schemas.SearchOrdersSquareResponse) *response_schemas.SearchOrdersResponse {
+	orders := make([]response_schemas.OrderResponse, len(squareResponse.Orders))
+	for i, squareOrder := range squareResponse.Orders {
+		orders[i] = o._convertSquareOrderToOrderResponse(squareOrder)
+	}
+	return &response_schemas.SearchOrdersResponse{
+		Orders: orders,
+	}
 }

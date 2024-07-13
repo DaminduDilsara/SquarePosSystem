@@ -33,3 +33,20 @@ type Order struct {
 		LineItems
 	} `json:"line_items"`
 }
+
+type SearchOrdersIncomingRequest struct {
+	LocationId string `json:"location_id" binding:"required"`
+	TableNo    string `json:"table_no"`
+}
+
+type SearchOrdersSquareRequest struct {
+	LocationIds   []string `json:"location_ids" binding:"required"`
+	ReturnEntries bool     `json:"return_entries"`
+	Query         struct {
+		Filter struct {
+			SourceFilter struct {
+				SourceNames []string `json:"source_names"`
+			} `json:"source_filter"`
+		} `json:"filter"`
+	} `json:"query"`
+}

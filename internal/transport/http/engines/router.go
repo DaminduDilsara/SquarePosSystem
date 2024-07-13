@@ -31,6 +31,8 @@ func (e *Engine) GetEngine() *gin.Engine {
 
 		v1Group.POST("/order/create", e.controllerV1.CreateOrderController)
 
+		v1Group.POST("/orders/search", e.controllerV1.SearchOrdersController)
+
 		// add endpoints
 	}
 
