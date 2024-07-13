@@ -14,18 +14,18 @@ import (
 
 const locationClientLogPrefix = "square_location_client_impl"
 
-type squareClient struct {
+type squareLocationClient struct {
 	config *configurations.Config
 }
 
-// NewSquareClient creates a new SquareClient
-func NewSquareClient(config *configurations.Config) LocationClient {
-	return &squareClient{
+// NewSquareLocationClient creates a new SquareClient
+func NewSquareLocationClient(config *configurations.Config) LocationClient {
+	return &squareLocationClient{
 		config: config,
 	}
 }
 
-func (s squareClient) CreateLocation(request request_schemas.CreateLocationSquareRequest, authHeader string) (*response_schemas.CreateLocationSquareResponse, error) {
+func (s squareLocationClient) CreateLocation(request request_schemas.CreateLocationSquareRequest, authHeader string) (*response_schemas.CreateLocationSquareResponse, error) {
 	url := fmt.Sprintf("%v/locations", s.config.SquareConfig.BaseUrl)
 	method := "POST"
 
@@ -35,13 +35,15 @@ func (s squareClient) CreateLocation(request request_schemas.CreateLocationSquar
 		return nil, err
 	}
 
+	log.Printf("%v - Making request to %s with payload %s", locationClientLogPrefix, url, string(payload))
+
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		log.Printf("%v - Error: %v", locationClientLogPrefix, err)
 		return nil, err
 	}
-	req.Header.Add("Square-Version", "2024-06-04")
+	req.Header.Add("Square-Version", s.config.SquareConfig.SquareVersion)
 	req.Header.Add("Authorization", fmt.Sprintf("%v", authHeader))
 	req.Header.Add("Content-Type", "application/json")
 

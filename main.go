@@ -4,6 +4,7 @@ import (
 	"SquarePosSystem/configurations"
 	"SquarePosSystem/internal/domain/clients/square_client"
 	"SquarePosSystem/internal/domain/services/location_service"
+	"SquarePosSystem/internal/domain/services/order_service"
 	"SquarePosSystem/internal/transport/http"
 	v1 "SquarePosSystem/internal/transport/http/controllers/v1"
 	"log"
@@ -16,10 +17,12 @@ func main() {
 
 	conf := configurations.LoadConfigurations()
 
-	squareClient := square_client.NewSquareClient(conf)
+	squareLocationClient := square_client.NewSquareLocationClient(conf)
+	squareOrderClient := square_client.NewSquareOrderClient(conf)
 
-	locationService := location_service.NewLocationService(squareClient)
-	controllerV1 := v1.NewControllerV1(locationService)
+	locationService := location_service.NewLocationService(squareLocationClient)
+	orderService := order_service.NewOrderService(squareOrderClient)
+	controllerV1 := v1.NewControllerV1(locationService, orderService)
 
 	http.InitServer(conf, controllerV1)
 
