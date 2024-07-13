@@ -142,3 +142,61 @@ func (s *squareOrderClient) SearchOrders(request request_schemas.SearchOrdersSqu
 	log.Printf("Successfully retrieved orders: %v", internalResp)
 	return &internalResp, nil
 }
+
+func (s *squareOrderClient) FindOrders(request request_schemas.FindOrdersSquareRequest, authHeader string) (*response_schemas.FindOrdersSquareResponse, error) {
+
+	url := fmt.Sprintf("%v/orders/batch-retrieve", s.config.SquareConfig.BaseUrl)
+	method := "POST"
+
+	payload, err := json.Marshal(request)
+	if err != nil {
+		log.Printf("%v - Error marshalling JSON: %v", orderClientLogPrefix, err)
+		return nil, err
+	}
+
+	log.Printf("%v - Making request to %s with payload %s", orderClientLogPrefix, url, string(payload))
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Printf("%v - Error: %v", orderClientLogPrefix, err)
+		return nil, err
+	}
+	req.Header.Add("Square-Version", s.config.SquareConfig.SquareVersion)
+	req.Header.Add("Authorization", fmt.Sprintf("%v", authHeader))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Printf("%v - Error: %v", orderClientLogPrefix, err)
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("%v - Error: %v", orderClientLogPrefix, err)
+		return nil, err
+	}
+
+	log.Printf("%v - Response status: %s, body: %s", orderClientLogPrefix, res.Status, string(body))
+
+	if res.StatusCode != http.StatusOK {
+		var errorResponse response_schemas.SquareErrorResponse
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			log.Printf("%v - Error: %v", orderClientLogPrefix, err)
+			return nil, err
+		}
+		log.Printf("%v - Square API error: %v", orderClientLogPrefix, errorResponse.Errors)
+		return nil, fmt.Errorf("square API error: %v", errorResponse.Errors)
+	}
+
+	var internalResp response_schemas.FindOrdersSquareResponse
+	if err := json.Unmarshal(body, &internalResp); err != nil {
+		log.Printf("%v - Error: %v", orderClientLogPrefix, err)
+		return nil, err
+	}
+
+	log.Printf("Successfully retrieved orders: %v", internalResp)
+	return &internalResp, nil
+}

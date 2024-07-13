@@ -9,7 +9,20 @@ type CreateOrderSquareResponse struct {
 type CreateOrderResponse struct {
 	OrderResponse
 }
+
+type SearchOrdersSquareResponse struct {
+	Orders []SquareOrder `json:"orders"`
+}
+
 type SearchOrdersResponse struct {
+	Orders []OrderResponse `json:"orders"`
+}
+
+type FindOrdersSquareResponse struct {
+	Orders []SquareOrder `json:"orders"`
+}
+
+type FindOrdersResponse struct {
 	Orders []OrderResponse `json:"orders"`
 }
 
@@ -54,10 +67,6 @@ type Totals struct {
 	Paid          int `json:"paid"`
 	Tips          int `json:"tips"`
 	Total         int `json:"total"`
-}
-
-type SearchOrdersSquareResponse struct {
-	Orders []SquareOrder `json:"orders"`
 }
 
 type SquareOrder struct {

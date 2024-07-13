@@ -8,4 +8,5 @@ import (
 type OrderService interface {
 	CreateOrder(request request_schemas.CreateOrderIncomingRequest, authHeader string) (*response_schemas.CreateOrderResponse, error)
 	SearchOrders(request request_schemas.SearchOrdersIncomingRequest, authHeader string) (*response_schemas.SearchOrdersResponse, error)
+	FindOrders(request request_schemas.FindOrdersIncomingRequest, authHeader string) (*response_schemas.FindOrdersResponse, error)
 }

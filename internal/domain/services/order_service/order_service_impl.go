@@ -67,13 +67,30 @@ func (o *orderService) SearchOrders(request request_schemas.SearchOrdersIncoming
 		internalReq.Query.Filter.SourceFilter.SourceNames = []string{request.TableNo}
 	}
 
-	// Call the client function
 	internalResp, err := o.client.SearchOrders(internalReq, authHeader)
 	if err != nil {
 		return nil, err
 	}
 
-	response := o.convertToSearchOrdersSquareResponse(internalResp)
+	response := o._convertToSearchOrdersSquareResponse(internalResp)
+
+	return response, nil
+}
+
+func (o *orderService) FindOrders(request request_schemas.FindOrdersIncomingRequest, authHeader string) (*response_schemas.FindOrdersResponse, error) {
+	internalReq := request_schemas.FindOrdersSquareRequest{
+		OrderBatchRetrieveRequest: request_schemas.OrderBatchRetrieveRequest{
+			OrderIds:   request.OrderIds,
+			LocationId: request.LocationId,
+		},
+	}
+
+	internalResp, err := o.client.FindOrders(internalReq, authHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	response := o._convertToFindOrdersSquareResponse(internalResp)
 
 	return response, nil
 }
@@ -93,7 +110,7 @@ func (o orderService) _convertSquareOrderToOrderResponse(squareOrder response_sc
 			Name:      lineItem.Name,
 			Comment:   lineItem.Note,
 			UnitPrice: lineItem.BasePriceMoney.Amount,
-			Quantity:  o.stringToInt(lineItem.Quantity),
+			Quantity:  o._stringToInt(lineItem.Quantity),
 			Discounts: []response_schemas.Discount{},
 			Modifiers: []response_schemas.Modifier{},
 			Amount:    lineItem.TotalMoney.Amount,
@@ -117,17 +134,27 @@ func (o orderService) _convertSquareOrderToOrderResponse(squareOrder response_sc
 	}
 }
 
-func (o orderService) stringToInt(s string) int {
+func (o orderService) _stringToInt(s string) int {
 	val, _ := strconv.Atoi(s)
 	return val
 }
 
-func (o orderService) convertToSearchOrdersSquareResponse(squareResponse *response_schemas.SearchOrdersSquareResponse) *response_schemas.SearchOrdersResponse {
+func (o orderService) _convertToSearchOrdersSquareResponse(squareResponse *response_schemas.SearchOrdersSquareResponse) *response_schemas.SearchOrdersResponse {
 	orders := make([]response_schemas.OrderResponse, len(squareResponse.Orders))
 	for i, squareOrder := range squareResponse.Orders {
 		orders[i] = o._convertSquareOrderToOrderResponse(squareOrder)
 	}
 	return &response_schemas.SearchOrdersResponse{
+		Orders: orders,
+	}
+}
+
+func (o orderService) _convertToFindOrdersSquareResponse(squareResponse *response_schemas.FindOrdersSquareResponse) *response_schemas.FindOrdersResponse {
+	orders := make([]response_schemas.OrderResponse, len(squareResponse.Orders))
+	for i, squareOrder := range squareResponse.Orders {
+		orders[i] = o._convertSquareOrderToOrderResponse(squareOrder)
+	}
+	return &response_schemas.FindOrdersResponse{
 		Orders: orders,
 	}
 }

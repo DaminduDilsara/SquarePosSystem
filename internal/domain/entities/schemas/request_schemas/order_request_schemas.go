@@ -8,30 +8,9 @@ type CreateOrderIncomingRequest struct {
 	LineItems   []LineItems `json:"line_items" binding:"required"`
 }
 
-type LineItems struct {
-	ItemId   string `json:"catalog_object_id" binding:"required"`
-	ItemName string `json:"name" binding:"required"`
-	Note     string `json:"note"`
-	Quantity string `json:"quantity" binding:"required"`
-}
-
 type CreateOrderSquareRequest struct {
 	IdempotencyKey string `json:"idempotency_key"`
 	Order          Order  `json:"order"`
-}
-
-type Order struct {
-	LocationId  string `json:"location_id"`
-	CustomerId  string `json:"customer_id"`
-	ReferenceId string `json:"reference_id"`
-	TicketName  string `json:"ticket_name"`
-	Source      struct {
-		Name string `json:"name"`
-	} `json:"source"`
-	LineItems []struct {
-		CatalogObjectId string `json:"catalog_object_id"`
-		LineItems
-	} `json:"line_items"`
 }
 
 type SearchOrdersIncomingRequest struct {
@@ -49,4 +28,38 @@ type SearchOrdersSquareRequest struct {
 			} `json:"source_filter"`
 		} `json:"filter"`
 	} `json:"query"`
+}
+
+type FindOrdersIncomingRequest struct {
+	OrderBatchRetrieveRequest
+}
+
+type FindOrdersSquareRequest struct {
+	OrderBatchRetrieveRequest
+}
+
+type OrderBatchRetrieveRequest struct {
+	OrderIds   []string `json:"order_ids"  binding:"required"`
+	LocationId string   `json:"location_id"`
+}
+
+type LineItems struct {
+	ItemId   string `json:"catalog_object_id" binding:"required"`
+	ItemName string `json:"name" binding:"required"`
+	Note     string `json:"note"`
+	Quantity string `json:"quantity" binding:"required"`
+}
+
+type Order struct {
+	LocationId  string `json:"location_id"`
+	CustomerId  string `json:"customer_id"`
+	ReferenceId string `json:"reference_id"`
+	TicketName  string `json:"ticket_name"`
+	Source      struct {
+		Name string `json:"name"`
+	} `json:"source"`
+	LineItems []struct {
+		CatalogObjectId string `json:"catalog_object_id"`
+		LineItems
+	} `json:"line_items"`
 }
